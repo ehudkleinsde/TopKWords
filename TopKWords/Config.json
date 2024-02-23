@@ -3,7 +3,7 @@
   "LogFilePath": "d:\\TopKWordsLog",
   "EssaysListAbsoluteUri": "https://drive.google.com/file/d/1TF4RPuj8iFwpa-lyhxG67V8NDlktmTGi/view?usp=sharing",
   "MaxRetriesForFetchingEssayContent": 5,
-  "HttpClientPoolCapacity": 180, //preferably, at least as large as the concurrency level
-  "MaxRequestsPerMinute": 180,
+  "HttpClientPoolCapacity": 120, //preferably, at least as large as the concurrency level
+  "MaxRequestsPerMinute": 120,
   "WordsBankUri": "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
 }

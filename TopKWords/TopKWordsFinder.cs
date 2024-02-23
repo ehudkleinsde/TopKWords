@@ -83,33 +83,42 @@ namespace TopKWords
                 while (_circuitBreaker.IsOpen())
                 {
                     _logger.LogInfo(nameof(PerformWordsCountJobs), "Circuit breaker is open.");
-                    await Task.Delay(1000);
+                    await Task.Delay(60000);
                 }
 
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
                 {
                     try
                     {
-                        int initialWait = _random.Next(0, 59);
-                        await Task.Delay(TimeSpan.FromSeconds(initialWait));
-
-                        string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
-                        string[] tokens = essayContent.Split(" ");
-
-                        foreach (string token in tokens)
+                        if (!_circuitBreaker.IsOpen())
                         {
-                            if (await _wordsValidator.IsValid(token))
+                            int initialWait = _random.Next(0, 59);
+                            await Task.Delay(TimeSpan.FromSeconds(initialWait));
+
+                            if (!_circuitBreaker.IsOpen())
                             {
-                                _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
+                                string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
+                                string[] tokens = essayContent.Split(" ");
+
+                                foreach (string token in tokens)
+                                {
+                                    if (await _wordsValidator.IsValid(token))
+                                    {
+                                        _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
+                                    }
+                                }
+
+                                string log = $"Successfully counted word from essay {job.EssayUri}";
+                                _logger.LogInfo(nameof(PerformWordsCountJobs), log);
+                                await Console.Out.WriteLineAsync(log);
+
+                                await Task.Delay((60 - initialWait) * 1000);
                             }
                         }
-
-                        string log = $"Successfully counted word from essay {job.EssayUri}";
-                        _logger.LogInfo(nameof(PerformWordsCountJobs), log);
-                        await Console.Out.WriteLineAsync(log);
-
-                        await Task.Delay((60 - initialWait) * 1000);
-
+                        else
+                        {
+                            jobsQueue.Enqueue(job);
+                        }
                     }
                     catch (HttpRequestException ex)
                     {

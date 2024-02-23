@@ -6,7 +6,7 @@
 
         public SimpleCircuitBreaker()
         {
-            _open = true;
+            _open = false;
         }
 
         //TODO: make the interval configurable
