@@ -1,6 +1,7 @@
 ﻿namespace WordsBank
 {
-    internal interface IWordsBank
+    public interface IWordsBank
     {
+        bool IsWordInBank(string word);
     }
 }

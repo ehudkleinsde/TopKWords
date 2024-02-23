@@ -1,6 +1,18 @@
-﻿namespace WordValidation
+﻿using WordsBank;
+
+namespace WordValidation
 {
-    internal class AtLeastThreeAlphaBeticCharsWordsValidator: IWordsValidator
+    public class AtLeastThreeAlphaBeticCharsWordsValidator : IWordsValidator
     {
+        private IWordsBank _wordsBank;
+        public AtLeastThreeAlphaBeticCharsWordsValidator(IWordsBank wordsBank)
+        {
+            _wordsBank = wordsBank;
+        }
+
+        public bool IsValid(string str)
+        {
+            return str != null && str.Length >= 3 && _wordsBank.IsWordInBank(str);
+        }
     }
 }

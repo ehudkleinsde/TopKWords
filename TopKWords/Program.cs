@@ -8,6 +8,7 @@ using Logger;
 using SimpleInjector;
 using TopKWords;
 using TopKWordsConfigProvider;
+using WordValidation;
 
 internal class Program
 {
@@ -40,6 +41,7 @@ internal class Program
         _container.Register<ISingleEssayProvider, HttpEssayContentProvider>(Lifestyle.Singleton);
         _container.Register<IHttpClientFactory, HttpClientFactory>(Lifestyle.Singleton);
         _container.Register<IContentExtractor, EngadgetContentExtractor>(Lifestyle.Singleton);
+        _container.Register<IWordsValidator, AtLeastThreeAlphaBeticCharsWordsValidator>(Lifestyle.Singleton);
 
         _container.Register<TopKWordsFinder>(Lifestyle.Transient);
         _container.Verify();

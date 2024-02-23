@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using TopKWords.Contracts;
 using TopKWordsConfigProvider;
+using WordValidation;
 
 namespace TopKWords
 {
@@ -14,13 +15,15 @@ namespace TopKWords
         private ITopKWordsConfigProvider _configProvider;
         private IEssaysListProvider _essaysProvider;
         private ISingleEssayProvider _singleEssayProvider;
+        private IWordsValidator _wordsValidator;
 
         private ConcurrentDictionary<string, int> _wordsCount;
 
         public TopKWordsFinder(ILogger logger,
             ITopKWordsConfigProvider configProvider,
             IEssaysListProvider essaysProvider,
-            ISingleEssayProvider singleEssayProvider)
+            ISingleEssayProvider singleEssayProvider,
+            IWordsValidator wordsValidator)
         {
             _logger = logger;
 
@@ -28,6 +31,8 @@ namespace TopKWords
             _configProvider = configProvider;
             _essaysProvider = essaysProvider;
             _singleEssayProvider = singleEssayProvider;
+
+            _wordsValidator = wordsValidator;
 
             _wordsCount = new();
         }
@@ -82,7 +87,10 @@ namespace TopKWords
 
                         foreach (string token in tokens)
                         {
-                            _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
+                            if (_wordsValidator.IsValid(token))
+                            {
+                                _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
+                            }
                         }
 
                         await Task.Delay((60 - initialWait) * 1000);
@@ -91,7 +99,11 @@ namespace TopKWords
                     }
                     catch (HttpRequestException ex)
                     {
-                        if (job.Retry < _configProvider.GetMaxRetriesForFetchingEssayContent())
+                        if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+                        {
+                            _logger.LogError(nameof(PerformWordsCountJobs), $"Failed fetching essay content, not retrying, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
+                        }
+                        else if (job.Retry < _configProvider.GetMaxRetriesForFetchingEssayContent())
                         {
                             _logger.LogError(nameof(PerformWordsCountJobs),
                                 $"Failed fetching essay content, retryable exception, retry number: {job.Retry}, " +
@@ -113,7 +125,7 @@ namespace TopKWords
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(nameof(PerformWordsCountJobs), $"Failed fetching essay content, nor retrying, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
+                        _logger.LogError(nameof(PerformWordsCountJobs), $"Failed fetching essay content, not retrying, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
                     }
                 }
             }
@@ -125,7 +137,7 @@ namespace TopKWords
         {
             ConcurrentQueue<CountEssayWordsJob> jobs = new();
 
-            foreach (Uri uri in essaysList.Take(1))
+            foreach (Uri uri in essaysList)
             {
                 jobs.Enqueue(new CountEssayWordsJob() { EssayUri = uri, Retry = 0 });
             }
