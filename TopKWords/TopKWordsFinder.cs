@@ -63,7 +63,9 @@ namespace TopKWords
                     .Select(w => new WordCount { Word = w.Key, Count = w.Value })
                     .ToList();
 
-                await Console.Out.WriteLineAsync(JsonConvert.SerializeObject(topK, Formatting.Indented));
+                string result = JsonConvert.SerializeObject(topK, Formatting.Indented);
+                await Console.Out.WriteLineAsync(result);
+                _logger.LogInfo(nameof(ExecuteAsync), result);
             }
             catch (Exception ex)
             {
@@ -110,7 +112,6 @@ namespace TopKWords
 
                                 string log = $"Successfully counted word from essay {job.EssayUri}";
                                 _logger.LogInfo(nameof(PerformWordsCountJobs), log);
-                                await Console.Out.WriteLineAsync(log);
 
                                 await Task.Delay((60 - initialWait) * 1000);
                             }

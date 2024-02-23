@@ -10,10 +10,11 @@
         }
 
         //TODO: make the interval configurable
+        //TODO: consider linear/exponential backoff
         public async Task OpenForIntervalAsync()
         {
             _open = true;
-            await Task.Delay(60000);
+            await Task.Delay(120_000);
             _open = false;
         }
 
