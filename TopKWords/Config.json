@@ -1,4 +1,6 @@
 ﻿{
   "TopKWords": 10,
-  "LogFilePath": "d:\\TopKWordsLog"
+  "LogFilePath": "d:\\TopKWordsLog",
+  "EssaysListAbsoluteUri": "https://drive.google.com/file/d/1TF4RPuj8iFwpa-lyhxG67V8NDlktmTGi/view?usp=sharing",
+  "MaxRetriesForFetchingEssayContent":  5
 }

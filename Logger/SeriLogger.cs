@@ -6,8 +6,8 @@ namespace Logger
     public class SeriLogger : ILogger
     {
         private Serilog.ILogger _logger;
-        private IConfigProvider _configProvider;
-        public SeriLogger(IConfigProvider configProvider)
+        private ITopKWordsConfigProvider _configProvider;
+        public SeriLogger(ITopKWordsConfigProvider configProvider)
         {
             _configProvider = configProvider;
 
@@ -21,29 +21,29 @@ namespace Logger
                 .CreateLogger();
         }
 
-        public void Finalize()
+        public void Cleanup()
         {
             Log.CloseAndFlush();
         }
 
-        public void LogError(string message)
+        public void LogError(string source, string message)
         {
-            _logger.Error(message);
+            _logger.Error($"{source} : {message}");
         }
 
-        public void LogFatalError(string message)
+        public void LogFatalError(string source, string message)
         {
-            _logger.Fatal(message);
+            _logger.Fatal($"{source} : {message}");
         }
 
-        public void LogInfo(string message)
+        public void LogInfo(string source, string message)
         {
-            _logger.Information(message);
+            _logger.Information($"{source} : {message}");
         }
 
-        public void LogWarning(string message)
+        public void LogWarning(string source, string message)
         {
-            _logger.Warning(message);
+            _logger.Warning($"{source} : {message}");
         }
     }
 }

@@ -12,6 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\EssaysProvider\EssaysProvider.csproj" />
 		<ProjectReference Include="..\Logger\Logger.csproj" />
 	</ItemGroup>
 

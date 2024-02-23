@@ -1,4 +1,6 @@
-﻿using Logger;
+﻿using EssaysProvider.Config;
+using EssaysProvider.EssaysList;
+using Logger;
 using SimpleInjector;
 using TopKWords;
 using TopKWordsConfigProvider;
@@ -9,6 +11,7 @@ internal class Program
 
     public static async Task Main(string[] args)
     {
+        //TODO: provide default config
         if(args.Length < 1 || args[0] == null || args[0] == string.Empty)
         {
             Console.WriteLine("Usage: TopKWords configFilePath");
@@ -23,8 +26,11 @@ internal class Program
 
     private static void InitializeContainer(string configFilePath)
     {
-        _container.RegisterInstance<IConfigProvider>(new FileConfigProvider(configFilePath));
+        var configProvider = new FileConfigProvider(configFilePath);
+        _container.RegisterInstance<ITopKWordsConfigProvider>(configProvider);
+        _container.RegisterInstance<IEssaysProviderConfigProvider>(configProvider);
         _container.Register<ILogger, SeriLogger>(Lifestyle.Singleton);
+        _container.Register<IEssaysListProvider, GoogleDriveEssaysListProvider>(Lifestyle.Singleton);
         _container.Register<TopKWordsFinder>(Lifestyle.Transient);
         _container.Verify();
     }

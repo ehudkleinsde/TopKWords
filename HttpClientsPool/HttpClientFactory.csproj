@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\ConfigProvider\TopKWordsConfigProvider.csproj" />
+    <ProjectReference Include="..\Logger\Logger.csproj" />
   </ItemGroup>
 
 </Project>
