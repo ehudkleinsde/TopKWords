@@ -39,5 +39,11 @@ namespace TopKWordsConfigProvider
         /// </summary>
         [JsonProperty("MaxRequestsPerMinute", Required = Required.Always)]
         public int MaxRequestsPerMinute { get; set; }
+
+        /// <summary>
+        /// Words bank Uri.
+        /// </summary>
+        [JsonProperty("WordsBankUri", Required = Required.Always)]
+        public Uri WordsBankUri { get; set; }
     }
 }

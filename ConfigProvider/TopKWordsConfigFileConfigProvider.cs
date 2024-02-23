@@ -1,10 +1,9 @@
 ﻿using Common.Config;
-using EssaysProvider.Config;
 using Newtonsoft.Json;
 
 namespace TopKWordsConfigProvider
 {
-    public class TopKWordsConfigFileConfigProvider : ITopKWordsConfigProvider, IEssaysProviderConfigProvider, IHttpClientFactoryConfigProvider
+    public class TopKWordsConfigFileConfigProvider : ITopKWordsConfigProvider, IEssaysProviderConfigProvider, IHttpClientFactoryConfigProvider, IWordsBankConfigProvider
     {
         private string _configFilePath;
         private TopKWordsConfig _topKWordsConfig;
@@ -52,6 +51,11 @@ namespace TopKWordsConfigProvider
         public int GetTopKWordsToFind()
         {
             return _topKWordsConfig.TopKWords;
+        }
+
+        public Uri GetWordsBankUri()
+        {
+            return _topKWordsConfig.WordsBankUri;
         }
     }
 }

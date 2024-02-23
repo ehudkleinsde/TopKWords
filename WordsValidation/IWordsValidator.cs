@@ -1,7 +1,8 @@
 ﻿namespace WordValidation
 {
-    public  interface IWordsValidator
+    public interface IWordsValidator
     {
-        bool IsValid(string str);
+        Task<bool> IsValid(string str);
+        Task Init();
     }
 }

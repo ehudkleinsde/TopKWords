@@ -1,6 +1,7 @@
 ﻿using ClientFactory;
 using ContentExtraction;
 using Logger;
+using System.Diagnostics;
 
 namespace EssaysProvider.SingleEssay
 {
@@ -18,7 +19,9 @@ namespace EssaysProvider.SingleEssay
 
         public async Task<string> GetEssayContentAsync(Uri essaysUri)
         {
+            Stopwatch sw = Stopwatch.StartNew();
             HttpClient client = await _httpClientFactory.GetHttpClientAsync();
+            sw.Stop();
             string content = null;
 
             try
@@ -26,12 +29,14 @@ namespace EssaysProvider.SingleEssay
                 content = await client.GetStringAsync(essaysUri);
                 content = _contentExtractor.Extract(content);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(nameof(GetEssayContentAsync), $"Failed extracting content from {essaysUri}, Exception: {ex.GetType()}, {ex.Message}");
                 _httpClientFactory.ReturnClient(client);
                 throw;
             }
+
+            _httpClientFactory.ReturnClient(client);
 
             return content;
         }

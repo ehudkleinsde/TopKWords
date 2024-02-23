@@ -1,7 +1,8 @@
-﻿namespace WordsBank
+﻿namespace WordValidation
 {
     public interface IWordsBank
     {
-        bool IsWordInBank(string word);
+        Task<bool> IsWordInBank(string word);
+        Task Init();
     }
 }

@@ -17,7 +17,7 @@ namespace Logger
             }
 
             _logger = new LoggerConfiguration()
-                .WriteTo.File(_configProvider.GetLogFilePath()+"\\log.txt")
+                .WriteTo.File(_configProvider.GetLogFilePath()+"\\log.txt", flushToDiskInterval: TimeSpan.FromSeconds(1))
                 .CreateLogger();
         }
 

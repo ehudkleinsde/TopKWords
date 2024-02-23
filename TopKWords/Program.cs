@@ -1,7 +1,6 @@
 ﻿using ClientFactory;
 using Common.Config;
 using ContentExtraction;
-using EssaysProvider.Config;
 using EssaysProvider.EssaysList;
 using EssaysProvider.SingleEssay;
 using Logger;
@@ -32,9 +31,11 @@ internal class Program
     private static void InitializeContainer(string configFilePath)
     {
         var configProvider = new TopKWordsConfigFileConfigProvider(configFilePath);
+
         _container.RegisterInstance<ITopKWordsConfigProvider>(configProvider);
         _container.RegisterInstance<IEssaysProviderConfigProvider>(configProvider);
         _container.RegisterInstance<IHttpClientFactoryConfigProvider>(configProvider);
+        _container.RegisterInstance<IWordsBankConfigProvider>(configProvider);
 
         _container.Register<ILogger, SeriLogger>(Lifestyle.Singleton);
         _container.Register<IEssaysListProvider, GoogleDriveEssaysListProvider>(Lifestyle.Singleton);
@@ -42,6 +43,7 @@ internal class Program
         _container.Register<IHttpClientFactory, HttpClientFactory>(Lifestyle.Singleton);
         _container.Register<IContentExtractor, EngadgetContentExtractor>(Lifestyle.Singleton);
         _container.Register<IWordsValidator, AtLeastThreeAlphaBeticCharsWordsValidator>(Lifestyle.Singleton);
+        _container.Register<IWordsBank, WordsBank>(Lifestyle.Singleton);
 
         _container.Register<TopKWordsFinder>(Lifestyle.Transient);
         _container.Verify();

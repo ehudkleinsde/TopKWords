@@ -3,6 +3,7 @@ using EssaysProvider.SingleEssay;
 using Logger;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using TopKWords.Contracts;
 using TopKWordsConfigProvider;
 using WordValidation;
@@ -19,6 +20,8 @@ namespace TopKWords
 
         private ConcurrentDictionary<string, int> _wordsCount;
 
+        private Random _random;
+
         public TopKWordsFinder(ILogger logger,
             ITopKWordsConfigProvider configProvider,
             IEssaysListProvider essaysProvider,
@@ -26,6 +29,7 @@ namespace TopKWords
             IWordsValidator wordsValidator)
         {
             _logger = logger;
+            _random = new();
 
             //TODO: consider keeping the config obj and not the providers
             _configProvider = configProvider;
@@ -43,9 +47,11 @@ namespace TopKWords
 
             try
             {
+                await _wordsValidator.Init();
                 List<Uri> essaysList = await _essaysProvider.GetEssaysListAsync();
                 ConcurrentQueue<CountEssayWordsJob> jobsQueue = CreateJobsQueue(essaysList);
-                List<Task> workers = Enumerable.Range(0, _configProvider.GetMaxRequestsPerMinute()).Select(_ => PerformWordsCountJobs(jobsQueue)).ToList();
+                List<Task> workers = Enumerable.Range(0, _configProvider.GetMaxRequestsPerMinute()).Select(_ => Task.Run(() => PerformWordsCountJobs(jobsQueue))).ToList();
+
                 await Task.WhenAll(workers);
 
                 //TODO: consider heap
@@ -70,32 +76,32 @@ namespace TopKWords
 
         private async Task PerformWordsCountJobs(ConcurrentQueue<CountEssayWordsJob> jobsQueue)
         {
-            Random random = new();
-            _logger.LogInfo(nameof(PerformWordsCountJobs), $"Start, Thread id {Thread.CurrentThread.ManagedThreadId}");
-
             while (jobsQueue.Count > 0)
             {
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
                 {
                     try
                     {
-                        int initialWait = random.Next(0, 59);
-                        await Task.Delay(initialWait * 1000);
+                        int initialWait = _random.Next(0, 59);
+                        await Task.Delay(TimeSpan.FromSeconds(initialWait));
 
                         string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
                         string[] tokens = essayContent.Split(" ");
 
                         foreach (string token in tokens)
                         {
-                            if (_wordsValidator.IsValid(token))
+                            if (await _wordsValidator.IsValid(token))
                             {
                                 _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
                             }
                         }
 
+                        string log = $"Successfully counted word from essay {job.EssayUri}";
+                        _logger.LogInfo(nameof(PerformWordsCountJobs), log);
+                        await Console.Out.WriteLineAsync(log);
+
                         await Task.Delay((60 - initialWait) * 1000);
 
-                        _logger.LogInfo(nameof(PerformWordsCountJobs), $"Successfully counted word from essay {job.EssayUri}");
                     }
                     catch (HttpRequestException ex)
                     {
@@ -129,8 +135,6 @@ namespace TopKWords
                     }
                 }
             }
-
-            _logger.LogInfo(nameof(PerformWordsCountJobs), $"End, Thread id {Thread.CurrentThread.ManagedThreadId}");
         }
 
         private ConcurrentQueue<CountEssayWordsJob> CreateJobsQueue(List<Uri> essaysList)

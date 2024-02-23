@@ -1,4 +1,4 @@
-﻿namespace EssaysProvider.Config
+﻿namespace Common.Config
 {
     public interface IEssaysProviderConfigProvider
     {

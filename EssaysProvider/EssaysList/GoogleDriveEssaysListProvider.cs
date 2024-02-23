@@ -1,4 +1,4 @@
-﻿using EssaysProvider.Config;
+﻿using Common.Config;
 using Logger;
 
 namespace EssaysProvider.EssaysList
@@ -18,14 +18,14 @@ namespace EssaysProvider.EssaysList
         {
             HttpClient client = new HttpClient();
             string content;
-            List<Uri> essaysQueue;
+            List<Uri> essaysList;
 
             try
             {
                 HttpResponseMessage response = await client.GetAsync(_essaysListUri);
                 response.EnsureSuccessStatusCode();
                 content = await response.Content.ReadAsStringAsync();
-                essaysQueue = PopulateQueue(content);
+                essaysList = PopulateQueue(content);
             }
             catch (Exception ex)
             {
@@ -33,9 +33,9 @@ namespace EssaysProvider.EssaysList
                 throw;
             }
 
-            _logger.LogInfo(nameof(GetEssaysListAsync), $"Got {essaysQueue.Count} essays.");
+            _logger.LogInfo(nameof(GetEssaysListAsync), $"Got {essaysList.Count} essays.");
 
-            return essaysQueue;
+            return essaysList;
         }
 
         private List<Uri> PopulateQueue(string content)
@@ -55,7 +55,6 @@ namespace EssaysProvider.EssaysList
                 {
                     uri = new Uri(line);
                     result.Add(uri);
-                    _logger.LogInfo(nameof(PopulateQueue), $"Got essay - {line}");
                 }
                 catch (Exception ex)
                 {
