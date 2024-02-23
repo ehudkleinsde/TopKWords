@@ -1,6 +1,6 @@
-﻿namespace FireflyHomeAssignment.WordValidation
+﻿namespace WordValidation
 {
-    internal interface IWordsValidator
+    public  interface IWordsValidator
     {
     }
 }

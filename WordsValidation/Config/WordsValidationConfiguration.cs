@@ -1,4 +1,4 @@
-﻿namespace FireflyHomeAssignment.WordValidation.Config
+﻿namespace WordValidation.Config
 {
     internal class WordsValidationConfiguration
     {

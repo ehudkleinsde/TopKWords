@@ -1,4 +1,4 @@
-﻿namespace FireflyHomeAssignment.WordValidation
+﻿namespace WordValidation
 {
     internal class AtLeastThreeAlphaBeticCharsWordsValidator: IWordsValidator
     {

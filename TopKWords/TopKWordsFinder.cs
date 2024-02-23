@@ -1,6 +1,5 @@
 ﻿using EssaysProvider.EssaysList;
 using Logger;
-using System.Collections.Concurrent;
 using TopKWordsConfigProvider;
 
 namespace TopKWords
