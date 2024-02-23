@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentExtraction", "Conten
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WordsValidation", "WordsValidation", "{BCC2F391-5832-4EDC-8FF2-8A2EC3C6C143}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CircuitBreaker", "CircuitBreaker\CircuitBreaker.csproj", "{81859C79-B64B-4B03-BB4E-F6B0255B5043}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{9CE94AB9-237A-4A88-9917-E86E46280BF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CE94AB9-237A-4A88-9917-E86E46280BF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CE94AB9-237A-4A88-9917-E86E46280BF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81859C79-B64B-4B03-BB4E-F6B0255B5043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81859C79-B64B-4B03-BB4E-F6B0255B5043}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81859C79-B64B-4B03-BB4E-F6B0255B5043}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81859C79-B64B-4B03-BB4E-F6B0255B5043}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +100,7 @@ Global
 		{25FE1CA3-185B-4ABD-9EF1-2C90CA840FFA} = {25E43604-97EB-4E30-989E-0EC8EE3D53F1}
 		{9CE94AB9-237A-4A88-9917-E86E46280BF0} = {746B9A0C-846E-4224-A707-4A3B832415FE}
 		{BCC2F391-5832-4EDC-8FF2-8A2EC3C6C143} = {746B9A0C-846E-4224-A707-4A3B832415FE}
+		{81859C79-B64B-4B03-BB4E-F6B0255B5043} = {746B9A0C-846E-4224-A707-4A3B832415FE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {04DBB6D2-455A-433B-9934-EE4D44B020AD}

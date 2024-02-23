@@ -1,9 +1,9 @@
-﻿using EssaysProvider.EssaysList;
+﻿using CircuitBreaker;
+using EssaysProvider.EssaysList;
 using EssaysProvider.SingleEssay;
 using Logger;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using TopKWords.Contracts;
 using TopKWordsConfigProvider;
 using WordValidation;
@@ -17,6 +17,7 @@ namespace TopKWords
         private IEssaysListProvider _essaysProvider;
         private ISingleEssayProvider _singleEssayProvider;
         private IWordsValidator _wordsValidator;
+        private ICircuitBreaker _circuitBreaker;
 
         private ConcurrentDictionary<string, int> _wordsCount;
 
@@ -26,7 +27,8 @@ namespace TopKWords
             ITopKWordsConfigProvider configProvider,
             IEssaysListProvider essaysProvider,
             ISingleEssayProvider singleEssayProvider,
-            IWordsValidator wordsValidator)
+            IWordsValidator wordsValidator,
+            ICircuitBreaker circuitBreaker)
         {
             _logger = logger;
             _random = new();
@@ -35,7 +37,7 @@ namespace TopKWords
             _configProvider = configProvider;
             _essaysProvider = essaysProvider;
             _singleEssayProvider = singleEssayProvider;
-
+            _circuitBreaker = circuitBreaker;
             _wordsValidator = wordsValidator;
 
             _wordsCount = new();
@@ -78,6 +80,12 @@ namespace TopKWords
         {
             while (jobsQueue.Count > 0)
             {
+                while (_circuitBreaker.IsOpen())
+                {
+                    _logger.LogInfo(nameof(PerformWordsCountJobs), "Circuit breaker is open.");
+                    await Task.Delay(1000);
+                }
+
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
                 {
                     try
@@ -109,11 +117,17 @@ namespace TopKWords
                         {
                             _logger.LogError(nameof(PerformWordsCountJobs), $"Failed fetching essay content, not retrying, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
                         }
+                        else if (ex.Message.Contains("999"))
+                        {
+                            jobsQueue.Enqueue(job);
+                            _logger.LogWarning(nameof(PerformWordsCountJobs), $"Rate limited, waiting");
+                            await _circuitBreaker.OpenForIntervalAsync();
+                        }
                         else if (job.Retry < _configProvider.GetMaxRetriesForFetchingEssayContent())
                         {
                             _logger.LogError(nameof(PerformWordsCountJobs),
                                 $"Failed fetching essay content, retryable exception, retry number: {job.Retry}, " +
-                                $"retries left: {_configProvider.GetMaxRetriesForFetchingEssayContent() - job.Retry}, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
+                                $"retries left: {_configProvider.GetMaxRetriesForFetchingEssayContent() - job.Retry}, {job.EssayUri}, Exception: {ex.GetType()}, Code: {ex.StatusCode}, {ex.Message}");
 
                             job.Retry++;
                             jobsQueue.Enqueue(job);

@@ -12,6 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\CircuitBreaker\CircuitBreaker.csproj" />
 		<ProjectReference Include="..\ContentExtraction\ContentExtraction.csproj" />
 		<ProjectReference Include="..\EssaysProvider\EssaysProvider.csproj" />
 		<ProjectReference Include="..\Logger\Logger.csproj" />
