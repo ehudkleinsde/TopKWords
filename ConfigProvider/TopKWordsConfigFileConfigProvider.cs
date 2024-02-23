@@ -1,16 +1,17 @@
-﻿using EssaysProvider.Config;
+﻿using Common.Config;
+using EssaysProvider.Config;
 using Newtonsoft.Json;
 
 namespace TopKWordsConfigProvider
 {
-    public class FileConfigProvider : ITopKWordsConfigProvider, IEssaysProviderConfigProvider
+    public class TopKWordsConfigFileConfigProvider : ITopKWordsConfigProvider, IEssaysProviderConfigProvider, IHttpClientFactoryConfigProvider
     {
         private string _configFilePath;
         private TopKWordsConfig _topKWordsConfig;
 
         //TODO: consider using a logger for incorrect config values, e.g., invalid Uris, or deserialization issues.
         //(not added due to cross reference between logger and config provider)
-        public FileConfigProvider(string configFilePath)
+        public TopKWordsConfigFileConfigProvider(string configFilePath)
         {
             _configFilePath = configFilePath;
 
@@ -23,14 +24,29 @@ namespace TopKWordsConfigProvider
             _topKWordsConfig = JsonConvert.DeserializeObject<TopKWordsConfig>(jsonString);
         }
 
+        public int GetMaxRequestsPerMinute()
+        {
+            return _topKWordsConfig.MaxRequestsPerMinute;
+        }
+
         public Uri GetEssaysListUri()
         {
             return _topKWordsConfig.EssaysListAbsoluteUri;
         }
 
+        public int GetHttpClientPoolCapacity()
+        {
+            return _topKWordsConfig.HttpClientPoolCapacity;
+        }
+
         public string GetLogFilePath()
         {
             return _topKWordsConfig.LogFilePath;
+        }
+
+        public int GetMaxRetriesForFetchingEssayContent()
+        {
+            return _topKWordsConfig.MaxRetriesForFetchingEssayContent;
         }
 
         public int GetTopKWordsToFind()

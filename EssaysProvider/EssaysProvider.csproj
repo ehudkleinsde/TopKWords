@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\ContentExtraction\ContentExtraction.csproj" />
+    <ProjectReference Include="..\HttpClientsPool\HttpClientFactory.csproj" />
     <ProjectReference Include="..\Logger\Logger.csproj" />
   </ItemGroup>
 

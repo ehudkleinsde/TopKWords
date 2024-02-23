@@ -1,5 +1,6 @@
 ﻿using Common.Config;
 using Logger;
+using System.Collections.Concurrent;
 
 namespace ClientFactory
 {
@@ -7,20 +8,35 @@ namespace ClientFactory
     {
         private ILogger _logger;
         private IHttpClientFactoryConfigProvider _configProvider;
-        private Queue<HttpClient> _clients;
+        private ConcurrentBag<HttpClient> _clients;
         private int _capacity;
+        private SemaphoreSlim _semaphore;
 
         public HttpClientFactory(ILogger logger,
             IHttpClientFactoryConfigProvider configProvider)
         {
             _logger = logger;
             _clients = new();
-            _capacity = configProvider.;
+            _capacity = configProvider.GetHttpClientPoolCapacity();
+            _semaphore = new(_capacity, _capacity);
         }
 
-        public Task<HttpClient> GetHttpClientAsync()
+        public async Task<HttpClient> GetHttpClientAsync()
         {
-            throw new NotImplementedException();
+            await _semaphore.WaitAsync();
+
+            if (!_clients.TryTake(out HttpClient client))
+            {
+                return new();
+            }
+            
+            return client;
+        }
+
+        public void ReturnClient(HttpClient client)
+        {
+            _clients.Add(client);
+            _semaphore.Release();
         }
     }
 }

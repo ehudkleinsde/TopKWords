@@ -26,6 +26,18 @@ namespace TopKWordsConfigProvider
         /// Max retries for fetching essay's content.
         /// </summary>
         [JsonProperty("MaxRetriesForFetchingEssayContent", Required = Required.Always)]
-        public Uri MaxRetriesForFetchingEssayContent { get; set; }
+        public int MaxRetriesForFetchingEssayContent { get; set; }
+
+        /// <summary>
+        /// HttpClient pool capacity.
+        /// </summary>
+        [JsonProperty("HttpClientPoolCapacity", Required = Required.Always)]
+        public int HttpClientPoolCapacity { get; set; }
+
+        /// <summary>
+        /// Max requests per minute.
+        /// </summary>
+        [JsonProperty("MaxRequestsPerMinute", Required = Required.Always)]
+        public int MaxRequestsPerMinute { get; set; }
     }
 }
