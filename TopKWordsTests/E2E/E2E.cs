@@ -9,7 +9,7 @@ using WordValidation;
 using FluentAssertions;
 using TopKWords.Contracts;
 
-namespace FindTopKWordsTests
+namespace TopKWordsTests.E2E
 {
     public class E2E
     {
@@ -67,12 +67,12 @@ namespace FindTopKWordsTests
         private IWordsValidator MockWordsValidator()
         {
             var sub = Substitute.For<IWordsValidator>();
-            sub.IsValid(Arg.Is<string>(input => input == "Lorem")).Returns(true);
-            sub.IsValid(Arg.Is<string>(input => input == "ipsum")).Returns(true);
-            sub.IsValid(Arg.Is<string>(input => input == "dolor")).Returns(true);
+            sub.IsValidAsync(Arg.Is<string>(input => input == "Lorem")).Returns(true);
+            sub.IsValidAsync(Arg.Is<string>(input => input == "ipsum")).Returns(true);
+            sub.IsValidAsync(Arg.Is<string>(input => input == "dolor")).Returns(true);
 
-            sub.IsValid(Arg.Is<string>(input => input == "sit")).Returns(false);
-            sub.IsValid(Arg.Is<string>(input => input == "amet")).Returns(false);
+            sub.IsValidAsync(Arg.Is<string>(input => input == "sit")).Returns(false);
+            sub.IsValidAsync(Arg.Is<string>(input => input == "amet")).Returns(false);
             return sub;
         }
 

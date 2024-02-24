@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TopKWords\TopKWords.csproj" />
+    <ProjectReference Include="..\WordsValidation\WordsValidator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

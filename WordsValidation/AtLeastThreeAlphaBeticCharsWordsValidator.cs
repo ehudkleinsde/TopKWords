@@ -10,18 +10,36 @@
             _wordsBank = wordsBank;
         }
 
-        public async Task Init()
+        public async Task InitAsync()
         {
             await _wordsBank.Init();
             _isInit = true;
         }
 
+        public bool IsInit()
+        {
+            return _isInit;
+        }
+
         //TODO: make validation logic configurable
-        public async Task<bool> IsValid(string str)
+        public async Task<bool> IsValidAsync(string str)
         {
             //TODO: Log and implement new exception type
-            if (!_isInit) { throw new Exception("Not initialized"); }
-            return str != null && str.Length >= 3 && await _wordsBank.IsWordInBank(str);
+            if (!IsInit()) { throw new Exception("Not initialized"); }
+            return str != null && str.Length >= 3 && OnlyAlphaBeticChars(str) && await _wordsBank.IsWordInBank(str);
+        } 
+
+        private bool OnlyAlphaBeticChars(string str)
+        {
+            foreach(char c in str)
+            {
+                if (!char.IsLetter(c))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

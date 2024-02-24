@@ -55,7 +55,7 @@ namespace TopKWords
 
             try
             {
-                await _wordsValidator.Init();
+                await _wordsValidator.InitAsync();
                 List<Uri> essaysList = await _essaysProvider.GetEssaysListAsync();
                 ConcurrentQueue<CountEssayWordsJob> jobsQueue = CreateJobsQueue(essaysList);
                 List<Task> workers = Enumerable.Range(0, _configProvider.GetMaxRequestsPerMinute()).Select(_ => Task.Run(() => PerformWordsCountJobs(jobsQueue))).ToList();
@@ -107,16 +107,8 @@ namespace TopKWords
         {
             while (jobsQueue.Count > 0)
             {
-                if (_jobsCount >= 100)//TODO: make it configurable
-                {
-                    await _circuitBreaker.OpenForIntervalAsync(10_000);
-                    ResetJobsCount();
-                }
-
-                while (_circuitBreaker.IsOpen())
-                {
-                    await Task.Delay(1000);
-                }
+                await PeridicWaitToAvoidRateLimit();
+                await WaitForCircuitBreakerToCloseIfNeeded();
 
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
                 {
@@ -130,20 +122,7 @@ namespace TopKWords
                             if (!_circuitBreaker.IsOpen())
                             {
                                 IncrementJobsCount();
-                                string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
-                                string[] tokens = essayContent.Split(" ");
-
-                                foreach (string token in tokens)
-                                {
-                                    if (await _wordsValidator.IsValid(token))
-                                    {
-                                        _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
-                                    }
-                                }
-
-                                string log = $"Successfully counted word from essay {job.EssayUri}";
-                                _logger.LogInfo(nameof(PerformWordsCountJobs), log);
-
+                                await CountWords(job);
                                 await Task.Delay((60 - initialWait) * 1000);
                             }
                         }
@@ -168,8 +147,39 @@ namespace TopKWords
                     }
                 }
             }
+        }
 
-            _logger.LogError(nameof(PerformWordsCountJobs), $"Thread exited");
+        private async Task CountWords(CountEssayWordsJob job)
+        {
+            string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
+            string[] tokens = essayContent.Split(" ");
+
+            foreach (string token in tokens)
+            {
+                if (await _wordsValidator.IsValidAsync(token))
+                {
+                    _wordsCount.AddOrUpdate(token, 1, (existingKey, existingValue) => existingValue + 1);
+                }
+            }
+
+            _logger.LogInfo(nameof(PerformWordsCountJobs), $"Successfully counted word from essay {job.EssayUri}");
+        }
+
+        private async Task WaitForCircuitBreakerToCloseIfNeeded()
+        {
+            while (_circuitBreaker.IsOpen())
+            {
+                await Task.Delay(1000);
+            }
+        }
+
+        private async Task PeridicWaitToAvoidRateLimit()
+        {
+            if (_jobsCount >= 100)//TODO: make it configurable
+            {
+                await _circuitBreaker.OpenForIntervalAsync(10_000);
+                ResetJobsCount();
+            }
         }
 
         private async Task HandleHttpRequestException(ConcurrentQueue<CountEssayWordsJob> jobsQueue, CountEssayWordsJob job, HttpRequestException ex)

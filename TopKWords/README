@@ -40,13 +40,13 @@ Retry:
 3. For retry we increment the retry number and push the job back to the end of the queue.
 
 Known Issues:
-1. Extracting text from "<article" tags fails on some pages as can be seen on the log file.
+1. Extracting text from "<article" tags fails on some pages as can be seen on the log file. Should have probably used some lib, didn't fix due to lack of time.
 
 HttpClientFactory:
 1. For reusing HttpClient instances (client pool). Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
 
 External libs:
-1. Used SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit, for no specific reason.
+1. Used SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit.
 
 Disclosure:
 1. I used ChatGPT for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
