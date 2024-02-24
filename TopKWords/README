@@ -10,9 +10,9 @@ Running instructions:
 2. Before running, change the "LogFilePath" config field to a valid path to a DIRECTORY into which the log file will be written. Keep the current structure, no need to specify file name, only <disk>:\\<folder>.
 3. In FindTopKWords\TopKWords\TopKWords, run:
 a. dotnet build
-b. dotnet run
+b. In the command prompt, go to TopKWords\bin\Debug\net8.0. Run ".\TopKWords.exe [Config.json absolute path]", e.g., .\TopKWords.exe "c:\topKWordsConfig\config.json".
 4. While the program executes, go to the directory which was set on step 2 for the log file, open the file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
-5. Watch the progress in the log file.
+5. Watch the progress on the log file.
 6. When the program ends, the result will be printed both on the console and kept in the log file.
 
 Assumptions I made:
@@ -50,3 +50,6 @@ External libs:
 
 Disclosure:
 1. I used ChatGPT for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
+
+Notes:
+1. Didn't implement all needed tests due to lack of time.

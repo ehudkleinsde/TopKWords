@@ -1,8 +1,4 @@
 {
   "profiles": {
-    "Profile 1": {
-      "commandName": "Project",
-      "commandLineArgs": "\"C:\\Users\\shuki\\source\\repos\\FindTopKWords\\TopKWords\\Config.json\""
-    }
   }
 }
