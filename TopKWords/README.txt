@@ -42,4 +42,10 @@ Known Issues:
 1. Extracting text from "<article" tags fails on some pages as can be seen on the log file.
 
 HttpClientFactory
-1. For reusing HttpClient instances. Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
+1. For reusing HttpClient instances (client pool). Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
+
+External libs:
+1. Used SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit, for no specific reason.
+
+Disclosure:
+1. I used ChatGPT4 for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
