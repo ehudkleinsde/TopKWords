@@ -3,7 +3,7 @@
 Prerequisites:
 1. Windows machine
 2. .NET 8
-3. Norepad++
+3. Notepad++
 
 Running instructions:
 1. In the directory FindTopKWords\TopKWords\TopKWords, there exists a Config.json file.
@@ -24,13 +24,13 @@ Assumptions I made:
 
 Rate limiting implementation:
 1. As mentioned, I assumed the rate is defined as "X requests per minute".
-2. To get, and limit the rate, the program created X worker threads.
+2. To acheive, and limit this desired rate, the program creates X worker threads.
 3. Each worker does a single request per minute.
-4. We therefore get X requests per minute made.
-5. We spread the requests evenly across the minute, using a shared random number generator.
-6. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens a circuit-breaker, which causes all other threads to effectivley pause.
-7. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls happen in a short time window. Therefore, upon receiving 404, we also open the CB.
-8. When the CB is closed again, we don't have to deal with a "cold-start" issue, as the threads will wait some random, different time before making new requests, so not all of them will requests immidietly when the CB closes.
+4. We therefore get X requests per minute0.
+5. We spread the requests evenly across the second in a minute, using a shared random numbers generator (wait time t, make the request, then wait 60-t additional seconds.
+6. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens the circuit-breaker, which causes all other threads to effectivley pause.
+7. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls (404) happen in a short time window. Therefore, upon receiving 404, we also open the CB, but for shorter duration.
+8. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time making new requests, so not all of them will request immidietly when the CB closes.
 9. After every 100 jobs we rest for a while, found to be partially helpful in avoiding rate limit.
 
 Retry:
@@ -41,11 +41,11 @@ Retry:
 Known Issues:
 1. Extracting text from "<article" tags fails on some pages as can be seen on the log file.
 
-HttpClientFactory
+HttpClientFactory:
 1. For reusing HttpClient instances (client pool). Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
 
 External libs:
 1. Used SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit, for no specific reason.
 
 Disclosure:
-1. I used ChatGPT4 for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
+1. I used ChatGPT for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
