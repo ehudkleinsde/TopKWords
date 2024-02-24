@@ -7,7 +7,6 @@ namespace WordValidation
     {
         private IWordsBankConfigProvider _configProvider;
         private ILogger _logger;
-
         private bool _isInit;
 
         private HashSet<string> _words;
@@ -20,7 +19,7 @@ namespace WordValidation
 
         public async Task<bool> IsWordInBank(string word)
         {
-            if (!_isInit)
+            if (!IsInit())
             {
                 //TODO: create new exception type
                 throw new Exception("Words bank not initialized");
@@ -29,7 +28,7 @@ namespace WordValidation
             return _words.Contains(word);
         }
 
-        public async Task Init()
+        public async Task InitAsync()
         {
             HttpClient client = new HttpClient();
             string content;
@@ -50,11 +49,16 @@ namespace WordValidation
             }
             catch (Exception ex)
             {
-                _logger.LogFatalError(nameof(Init), $"Unable to get words bank. Exception: {ex.GetType()}, {ex.Message}");
+                _logger.LogFatalError(nameof(InitAsync), $"Unable to get words bank. Exception: {ex.GetType()}, {ex.Message}");
                 throw;
             }
 
-            _logger.LogInfo(nameof(Init), $"Got {_words.Count} words in word bank.");
+            _logger.LogInfo(nameof(InitAsync), $"Got {_words.Count} words in word bank.");
+        }
+
+        public bool IsInit()
+        {
+            return _isInit;
         }
     }
 }

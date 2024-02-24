@@ -12,7 +12,7 @@
 
         public async Task InitAsync()
         {
-            await _wordsBank.Init();
+            await _wordsBank.InitAsync();
             _isInit = true;
         }
 

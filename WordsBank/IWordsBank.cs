@@ -3,6 +3,7 @@
     public interface IWordsBank
     {
         Task<bool> IsWordInBank(string word);
-        Task Init();
+        Task InitAsync();
+        bool IsInit();
     }
 }
