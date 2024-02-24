@@ -48,21 +48,33 @@ namespace EssaysProvider.EssaysList
             List<Uri> result = new();
             string[] lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             Uri uri;
+            string cleanLine;
 
             foreach (string line in lines)
             {
+                cleanLine = CleanUri(line);
+
                 try
                 {
-                    uri = new Uri(line);
+                    uri = new Uri(cleanLine);
                     result.Add(uri);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(nameof(PopulateQueue), $"Failed to convert string to Uri: {line}, Exception: {ex.GetType()}, {ex.Message}");
+                    _logger.LogWarning(nameof(PopulateQueue), $"Failed to convert string to Uri: {cleanLine}, Exception: {ex.GetType()}, {ex.Message}");
                 }
             }
 
             return result;
+        }
+
+        private string CleanUri(string uri)
+        {
+            uri = uri.TrimEnd();
+            uri = uri.TrimEnd('/');
+            uri = uri.TrimStart();
+
+            return uri;
         }
 
         private Uri ConvertGoogleDriveSharingUriToDownloadUri(Uri uri)

@@ -2,7 +2,7 @@
 {
     public class SimpleCircuitBreaker : ICircuitBreaker
     {
-        private bool _open;
+        private volatile bool _open;
 
         public SimpleCircuitBreaker()
         {
@@ -11,10 +11,10 @@
 
         //TODO: make the interval configurable
         //TODO: consider linear/exponential backoff
-        public async Task OpenForIntervalAsync()
+        public async Task OpenForIntervalAsync(int interval = 60_000)
         {
             _open = true;
-            await Task.Delay(120_000);
+            await Task.Delay(interval);
             _open = false;
         }
 

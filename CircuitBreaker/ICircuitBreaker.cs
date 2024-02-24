@@ -3,6 +3,6 @@
     public interface ICircuitBreaker
     {
         bool IsOpen();
-        Task OpenForIntervalAsync();
+        Task OpenForIntervalAsync(int interval = 60_000);
     }
 }

@@ -4,13 +4,14 @@ using EssaysProvider.SingleEssay;
 using Logger;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using TopKWords.Contracts;
 using TopKWordsConfigProvider;
 using WordValidation;
 
 namespace TopKWords
 {
-    internal class TopKWordsFinder
+    public class TopKWordsFinder
     {
         private ILogger _logger;
         private ITopKWordsConfigProvider _configProvider;
@@ -22,6 +23,9 @@ namespace TopKWords
         private ConcurrentDictionary<string, int> _wordsCount;
 
         private Random _random;
+        private volatile int _jobsCount;
+
+        private object _locker = new();
 
         public TopKWordsFinder(ILogger logger,
             ITopKWordsConfigProvider configProvider,
@@ -33,6 +37,8 @@ namespace TopKWords
             _logger = logger;
             _random = new();
 
+            _jobsCount = 0;
+
             //TODO: consider keeping the config obj and not the providers
             _configProvider = configProvider;
             _essaysProvider = essaysProvider;
@@ -43,9 +49,10 @@ namespace TopKWords
             _wordsCount = new();
         }
 
-        public async Task ExecuteAsync()
+        public async Task<List<WordCount>> ExecuteAsync()
         {
             _logger.LogInfo(nameof(ExecuteAsync), "Start");
+            List<WordCount> result = null;
 
             try
             {
@@ -57,15 +64,15 @@ namespace TopKWords
                 await Task.WhenAll(workers);
 
                 //TODO: consider heap
-                List<WordCount> topK = _wordsCount
+                result = _wordsCount
                     .OrderByDescending(pair => pair.Value)
                     .Take(_configProvider.GetTopKWordsToFind())
                     .Select(w => new WordCount { Word = w.Key, Count = w.Value })
                     .ToList();
 
-                string result = JsonConvert.SerializeObject(topK, Formatting.Indented);
-                await Console.Out.WriteLineAsync(result);
-                _logger.LogInfo(nameof(ExecuteAsync), result);
+                string resultStr = JsonConvert.SerializeObject(result, Formatting.Indented);
+                await Console.Out.WriteLineAsync(resultStr);
+                _logger.LogInfo(nameof(ExecuteAsync), resultStr);
             }
             catch (Exception ex)
             {
@@ -76,16 +83,42 @@ namespace TopKWords
                 _logger.LogInfo(nameof(ExecuteAsync), "End");
                 CleanUp();
             }
+
+            return result;
+        }
+
+        //TODO: extract to another component
+        private void IncrementJobsCount()
+        {
+            lock (_locker)
+            {
+                _jobsCount++;
+            }
+        }
+
+        private void ResetJobsCount()
+        {
+            lock (_locker)
+            {
+                _jobsCount = 0;
+            }
         }
 
         private async Task PerformWordsCountJobs(ConcurrentQueue<CountEssayWordsJob> jobsQueue)
         {
             while (jobsQueue.Count > 0)
             {
+                if (_jobsCount >= 100)//TODO: make it configurable
+                {
+                    //_logger.LogInfo(nameof(PerformWordsCountJobs), "Opened CB after 100 requests.");
+                    await _circuitBreaker.OpenForIntervalAsync(10_000);
+                    ResetJobsCount();
+                }
+
                 while (_circuitBreaker.IsOpen())
                 {
-                    _logger.LogInfo(nameof(PerformWordsCountJobs), "Circuit breaker is open.");
-                    await Task.Delay(60000);
+                    //_logger.LogInfo(nameof(PerformWordsCountJobs), "Circuit breaker is open.");
+                    await Task.Delay(1000);
                 }
 
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
@@ -99,6 +132,7 @@ namespace TopKWords
 
                             if (!_circuitBreaker.IsOpen())
                             {
+                                IncrementJobsCount();
                                 string essayContent = await _singleEssayProvider.GetEssayContentAsync(job.EssayUri);
                                 string[] tokens = essayContent.Split(" ");
 
@@ -125,7 +159,9 @@ namespace TopKWords
                     {
                         if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
                         {
+                            _logger.LogInfo(nameof(PerformWordsCountJobs), "Opened CB after 404.");
                             _logger.LogError(nameof(PerformWordsCountJobs), $"Failed fetching essay content, not retrying, {job.EssayUri}, Exception: {ex.GetType()}, {ex.Message}");
+                            await _circuitBreaker.OpenForIntervalAsync(15_000);
                         }
                         else if (ex.Message.Contains("999"))
                         {
@@ -159,6 +195,8 @@ namespace TopKWords
                     }
                 }
             }
+
+            _logger.LogError(nameof(PerformWordsCountJobs), $"Thread exited");
         }
 
         private ConcurrentQueue<CountEssayWordsJob> CreateJobsQueue(List<Uri> essaysList)
