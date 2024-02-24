@@ -1,0 +1,45 @@
+﻿Top K words finder - Finds k most recurring words in a list of articles
+
+Prerequisites:
+1. Windows machine
+2. .NET 8
+3. Norepad++
+
+Running instructions:
+1. In the directory FindTopKWords\TopKWords\TopKWords, there exists a Config.json file.
+2. Before running, change the "LogFilePath" config field to a valid path to a DIRECTORY into which the log file will be written. Keep the current structure, no need to specify file name, only <disk>:\\<folder>.
+3. In FindTopKWords\TopKWords\TopKWords, run:
+a. dotnet build
+b. dotnet run
+4. While the program executes, go to the directory which was set on step 2 for the log file, open the file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
+5. Watch the progress in the log file.
+6. When the program ends, the result will be printed both on the console and kept in the log file.
+
+Assumptions I made:
+1. Only counted words which appear in the "<article>" tages of the Engadget page.
+2. Printed both the top K words and the count for each word.
+3. Words should be counted as is, not converted to lowercase or any other preprocessing.
+4. Rate is defined as requests per minute.
+5. Used Serilog for logging.
+
+Rate limiting implementation:
+1. As mentioned, I assumed the rate is defined as "X requests per minute".
+2. To get, and limit the rate, the program created X worker threads.
+3. Each worker does a single request per minute.
+4. We therefore get X requests per minute made.
+5. We spread the requests evenly across the minute, using a shared random number generator.
+6. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens a circuit-breaker, which causes all other threads to effectivley pause.
+7. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls happen in a short time window. Therefore, upon receiving 404, we also open the CB.
+8. When the CB is closed again, we don't have to deal with a "cold-start" issue, as the threads will wait some random, different time before making new requests, so not all of them will requests immidietly when the CB closes.
+9. After every 100 jobs we rest for a while, found to be partially helpful in avoiding rate limit.
+
+Retry:
+1. Retry amount is configurable.
+2. We retry only on retryable exceptions (rate-limit or taskCancelled, not 404).
+3. For retry we increment the retry number and push the job back to the end of the queue.
+
+Known Issues:
+1. Extracting text from "<article" tags fails on some pages as can be seen on the log file.
+
+HttpClientFactory
+1. For reusing HttpClient instances. Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
