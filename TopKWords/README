@@ -32,6 +32,7 @@ Rate limiting implementation:
 7. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls (404) happen in a short time window. Therefore, upon receiving 404, we also open the CB, but for shorter duration.
 8. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time making new requests, so not all of them will request immidietly when the CB closes.
 9. After every 100 jobs we rest for a while, found to be partially helpful in avoiding rate limit.
+10. When getting throttled, we wait for a fixed amout of time and try again. Didn't implement linear/exponential backoff due to lack of time.
 
 Retry:
 1. Retry amount is configurable.
