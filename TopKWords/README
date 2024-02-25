@@ -29,7 +29,7 @@ Rate limiting implementation:
 5. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens a shared circuit-breaker, which causes all other threads to effectivley pause.
 6. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls (404) happen in a short time window. 
 Therefore, upon receiving 404, we also open the CB, but for shorter duration.
-7. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time making new requests, so not all of them will request immidietly when the CB closes.
+7. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time before making new requests, so not all of them will request immidietly when the CB closes.
 8. After every 100 jobs we pause for a while, found to be partially helpful in avoiding rate limit.
 9. When getting throttled, we wait for a fixed amout of time and try again. Didn't implement linear/exponential backoff due to lack of time.
 
