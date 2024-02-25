@@ -1,55 +1,58 @@
 ﻿Top K words finder - Finds k most recurring words in a list of articles
 
 Prerequisites:
-1. Windows machine
+1. Windows machine (wasn't tested on other OS)
 2. .NET 8
-3. Notepad++
+3. Notepad++ (for tracking the log)
 
 Running instructions:
 1. In the directory FindTopKWords\TopKWords\TopKWords, there exists a Config.json file.
 2. Before running, change the "LogFilePath" config field to a valid path to a DIRECTORY into which the log file will be written. Keep the current structure, no need to specify file name, only <disk>:\\<folder>.
 3. In FindTopKWords\TopKWords\TopKWords, run:
-a. dotnet build
-b. In the command prompt, go to TopKWords\bin\Debug\net8.0. Run ".\TopKWords.exe [Config.json absolute path]", e.g., .\TopKWords.exe "c:\topKWordsConfig\config.json".
-4. While the program executes, go to the directory which was set on step 2 for the log file, open the file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
+	a. dotnet build
+	b. In the command prompt, go to TopKWords\bin\Debug\net8.0. Run ".\TopKWords.exe [Config.json absolute path]", e.g., .\TopKWords.exe "C:\FindTopKWords\TopKWords\config.json".
+4. While the program executes, go to the directory which was set on step 2 for the log file, open the LOG.TXT file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
 5. Watch the progress on the log file.
 6. When the program ends, the result will be printed both on the console and kept in the log file.
 
 Assumptions I made:
-1. Only counted words which appear in the "<article>" tages of the Engadget page.
-2. Printed both the top K words and the count for each word.
-3. Words should be counted as is, not converted to lowercase or any other preprocessing.
+1. Only counted words which appear in between the "<article>" tags of the Engadget page, excluding all the scripts and markup.
+2. Printed both the words and the count for each word of the result.
+3. Words should be counted as is, not converted to lowercase or any other pre-processing.
 4. Rate is defined as requests per minute.
-5. Used Serilog for logging.
 
 Rate limiting implementation:
 1. As mentioned, I assumed the rate is defined as "X requests per minute".
-2. To acheive, and limit this desired rate, the program creates X worker threads.
-3. Each worker does a single request per minute.
-4. We therefore get X requests per minute0.
-5. We spread the requests evenly across the second in a minute, using a shared random numbers generator (wait time t, make the request, then wait 60-t additional seconds.
-6. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens the circuit-breaker, which causes all other threads to effectivley pause.
-7. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls (404) happen in a short time window. Therefore, upon receiving 404, we also open the CB, but for shorter duration.
-8. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time making new requests, so not all of them will request immidietly when the CB closes.
-9. After every 100 jobs we rest for a while, found to be partially helpful in avoiding rate limit.
-10. When getting throttled, we wait for a fixed amout of time and try again. Didn't implement linear/exponential backoff due to lack of time.
+2. To acheive, and limit the rate, the program creates X worker threads.
+3. Each worker performs a single request per minute, such that we acheive "X requests per minute".
+4. We spread the requests evenly across the seconds in a minute, using a shared random numbers generator (wait time t, make the request, then wait 60-t additional seconds.
+5. Circuit-Breaker (CB hereinafter) - When a thread gets throttled by the server, the thread opens a shared circuit-breaker, which causes all other threads to effectivley pause.
+6. I think I noticed that the server is more aggressive with rate limits when numerous requests for non-existing urls (404) happen in a short time window. 
+Therefore, upon receiving 404, we also open the CB, but for shorter duration.
+7. When the CB is closed again, we don't have to deal with a "cold-start" issue, as each thread will wait some random time making new requests, so not all of them will request immidietly when the CB closes.
+8. After every 100 jobs we pause for a while, found to be partially helpful in avoiding rate limit.
+9. When getting throttled, we wait for a fixed amout of time and try again. Didn't implement linear/exponential backoff due to lack of time.
 
 Retry:
 1. Retry amount is configurable.
 2. We retry only on retryable exceptions (rate-limit or taskCancelled, not 404).
-3. For retry we increment the retry number and push the job back to the end of the queue.
+3. For retry we increment the retry counter of the job and push the job back to the end of the queue.
 
 Known Issues:
-1. Extracting text from "<article" tags fails on some pages as can be seen on the log file. Should have probably used some lib, didn't fix due to lack of time.
+1. Extracting text from "<article" tags fails on some pages as can be seen on the log file. Didn't fix due to lack of time.
 
 HttpClientFactory:
-1. For reusing HttpClient instances (client pool). Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still good practice).
+1. For reusing HttpClient instances (client pool). Probably not needed as bottleneck is server side rate limit, not HttpClient creation (but still a good practice).
 
 External libs:
-1. Used SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit.
+1. SimpleInjector, Serilog, FluentAssertions, NSubstitute, xUnit.
 
 Disclosure:
-1. I used ChatGPT for reminders on how to use some libs and do some stuff, didn't copy paste, and didn't consult about design.
+1. I used ChatGPT for reminders on how to use some libs and do some stuff, didn't copy paste, didn't consult about design.
+
+Tests:
+1. The E2E takes 1 min, due to me not making the wait time configurable, due to lack of time.
+2. Didn't implement all needed tests due to lack of time.
 
 Notes:
-1. Didn't implement all needed tests due to lack of time.
+1. I know implementing every component in a seperate project is an overkill for this project, but its a good practice imo in real projects.

@@ -107,7 +107,7 @@ namespace TopKWords
         {
             while (jobsQueue.Count > 0)
             {
-                await PeridicWaitToAvoidRateLimit();
+                await PeriodicWaitToAvoidRateLimit();
                 await WaitForCircuitBreakerToCloseIfNeeded();
 
                 if (jobsQueue.TryDequeue(out CountEssayWordsJob job))
@@ -173,7 +173,7 @@ namespace TopKWords
             }
         }
 
-        private async Task PeridicWaitToAvoidRateLimit()
+        private async Task PeriodicWaitToAvoidRateLimit()
         {
             if (_jobsCount >= 100)//TODO: make it configurable
             {
