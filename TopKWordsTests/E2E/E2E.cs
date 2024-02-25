@@ -27,7 +27,6 @@ namespace TopKWordsTests.E2E
 
             List<WordCount> result = await finder.ExecuteAsync();
 
-            //Lorem ipsum dolor sit amet Lorem
             result[0].Word.Should().BeEquivalentTo("Lorem");
             result[0].Count.Should().Be(3);
 
