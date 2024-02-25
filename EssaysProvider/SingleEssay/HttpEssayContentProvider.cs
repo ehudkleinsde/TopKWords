@@ -19,9 +19,7 @@ namespace EssaysProvider.SingleEssay
 
         public async Task<string> GetEssayContentAsync(Uri essaysUri)
         {
-            Stopwatch sw = Stopwatch.StartNew();
             HttpClient client = await _httpClientFactory.GetHttpClientAsync();
-            sw.Stop();
             string content = null;
 
             try
