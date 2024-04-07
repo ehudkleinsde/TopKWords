@@ -1,4 +1,4 @@
-﻿Top K words finder - Finds k most recurring words in a list of articles
+﻿Engadget.com Top K words finder - Finds k most recurring words in a list of articles in Engadget.com
 
 Prerequisites:
 1. Windows machine (wasn't tested on other OS)
@@ -7,13 +7,19 @@ Prerequisites:
 
 Running instructions:
 1. In the directory FindTopKWords\TopKWords\TopKWords, there exists a Config.json file.
-2. Before running, change the "LogFilePath" config field to a valid path to a DIRECTORY into which the log file will be written. Keep the current structure, no need to specify file name, only <disk>:\\<folder>.
-3. In FindTopKWords\TopKWords\TopKWords, run:
+2. The config file includes a link to file containing a list of Engadget.com urls. The link included in the README has 50 urls.
+You can change it to the following urls for longer url lists:
+a. 50 urls (default in config.json) - https://drive.google.com/file/d/1yWosoX01RoNtSdGug7_VwIhSG4x6HlG3/view?usp=sharing
+b. 250 urls - https://drive.google.com/file/d/1XkgKd-Hve8QU7OTuVORWtnsA1HnBkMRd/view?usp=sharing
+c. 1000 urls - https://drive.google.com/file/d/1yKuYXLJ-FSuovXsRhXM0v4dbVw_TREVg/view?usp=sharing
+
+3. Before running, change the "LogFilePath" config field to a valid path to a DIRECTORY into which the log file will be written. Keep the current structure, no need to specify file name, only <disk>:\\<folder>.
+4. In FindTopKWords\TopKWords\TopKWords, run:
 	a. dotnet build
 	b. In the command prompt, go to TopKWords\bin\Debug\net8.0. Run ".\TopKWords.exe [Config.json absolute path]", e.g., .\TopKWords.exe "C:\FindTopKWords\TopKWords\config.json".
-4. While the program executes, go to the directory which was set on step 2 for the log file, open the LOG.TXT file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
-5. Watch the progress on the log file.
-6. When the program ends, the result will be printed both on the console and kept in the log file.
+5. While the program executes, go to the directory which was set on step 2 for the log file, open the LOG.TXT file with Notepad++, and use Notepad++'s "Monitoring" option to trail the file (View -> Monitoring).
+6. Watch the progress on the log file.
+7. When the program ends, the result will be printed both on the console and kept in the log file.
 
 Assumptions I made:
 1. Only counted words which appear in between the "<article>" tags of the Engadget page, excluding all the scripts and markup.
