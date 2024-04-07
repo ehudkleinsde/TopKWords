@@ -1,7 +1,7 @@
 ﻿{
   "TopKWords": 10,
   "LogFilePath": "d:\\TopKWordsLog",
-  "EssaysListAbsoluteUri": "https://drive.google.com/file/d/1TF4RPuj8iFwpa-lyhxG67V8NDlktmTGi/view?usp=sharing",
+  "EssaysListAbsoluteUri": "https://drive.google.com/file/d/1lGCRacDWGEO1ONQiVep9klHMZvFznZdm/view?usp=sharing",
   "MaxRetriesForFetchingEssayContent": 5,
   "HttpClientPoolCapacity": 180, //preferably, at least as large as the concurrency level
   "MaxRequestsPerMinute": 180,
